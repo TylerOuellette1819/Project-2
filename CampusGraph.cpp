@@ -9,7 +9,6 @@
 #include <climits>
 #include <vector>
 #include <queue>
-#include <set>
 
 std::string CampusGraph::trim(const std::string& str) const {
     const std::string whitespace = " \t\n\r\f\v";
@@ -107,7 +106,6 @@ void CampusGraph::loadBuildings(const std::string& filepath) {
             continue;
         }
 
-        // Check for duplicate (case-insensitive)
         if (findBuilding(buildingName) != -1) {
             std::cout << getBaseName(filepath) << ":" << lineNumber 
                       << ": duplicate building name '" << buildingName << "'\n";
@@ -115,11 +113,9 @@ void CampusGraph::loadBuildings(const std::string& filepath) {
             continue;
         }
 
-        // Add building
         Building b;
         b.name = buildingName;
         buildings_.push_back(b);
-        // Resize adjacency list
         adjacencyList_.resize(buildings_.size());
         ++acceptedCount;
     }
@@ -168,7 +164,6 @@ void CampusGraph::loadConnections(const std::string& filepath) {
             continue;
         }
 
-        // Check if both buildings exist
         int idxA = findBuilding(buildingA);
         int idxB = findBuilding(buildingB);
         
@@ -185,7 +180,6 @@ void CampusGraph::loadConnections(const std::string& filepath) {
             continue;
         }
 
-        // Check for self-connection
         if (idxA == idxB) {
             std::cout << getBaseName(filepath) << ":" << lineNumber 
                       << ": self-connection '" << buildings_[idxA].name << "|" 
@@ -194,7 +188,6 @@ void CampusGraph::loadConnections(const std::string& filepath) {
             continue;
         }
 
-        // Check for duplicate connection (including reversed)
         bool alreadyConnected = false;
         for (int neighbor : adjacencyList_[idxA]) {
             if (neighbor == idxB) {
@@ -210,7 +203,6 @@ void CampusGraph::loadConnections(const std::string& filepath) {
             continue;
         }
 
-        // Add undirected edge (preserve insertion order)
         adjacencyList_[idxA].push_back(idxB);
         adjacencyList_[idxB].push_back(idxA);
         ++acceptedCount;
@@ -245,7 +237,6 @@ void CampusGraph::displayCountsAndDegrees() const {
         return;
     }
 
-    // Count total connections (each undirected edge counted once)
     int totalConnections = 0;
     for (size_t i = 0; i < adjacencyList_.size(); ++i) {
         totalConnections += static_cast<int>(adjacencyList_[i].size());
@@ -274,7 +265,6 @@ void CampusGraph::bfsReachability(const std::string& startBuilding) const {
     std::queue<int> q;
     std::vector<int> distance(buildings_.size(), -1);
 
-    // Mark start as visited when enqueued
     visited[startIdx] = true;
     distance[startIdx] = 0;
     q.push(startIdx);
@@ -286,7 +276,6 @@ void CampusGraph::bfsReachability(const std::string& startBuilding) const {
         q.pop();
         visitOrder.push_back(current);
 
-        // Visit neighbors in insertion order
         for (int neighbor : adjacencyList_[current]) {
             if (!visited[neighbor]) {
                 visited[neighbor] = true;
@@ -296,7 +285,6 @@ void CampusGraph::bfsReachability(const std::string& startBuilding) const {
         }
     }
 
-    // Display results
     int reachableCount = static_cast<int>(visitOrder.size());
     for (int idx : visitOrder) {
         std::cout << buildings_[idx].name << " (distance " << distance[idx] << ")\n";
@@ -323,7 +311,6 @@ void CampusGraph::shortestPath(const std::string& startBuilding, const std::stri
         return;
     }
 
-    // BFS to find shortest path (in edges)
     std::vector<bool> visited(buildings_.size(), false);
     std::vector<int> parent(buildings_.size(), -1);
     std::queue<int> q;
@@ -356,7 +343,6 @@ void CampusGraph::shortestPath(const std::string& startBuilding, const std::stri
         return;
     }
 
-    // Reconstruct path
     std::vector<int> path;
     int cur = destIdx;
     while (cur != -1) {
@@ -366,7 +352,6 @@ void CampusGraph::shortestPath(const std::string& startBuilding, const std::stri
     }
     std::reverse(path.begin(), path.end());
 
-    // Display path
     for (int idx : path) {
         std::cout << buildings_[idx].name << "\n";
     }
@@ -379,7 +364,6 @@ void CampusGraph::connectivityReport() const {
         return;
     }
 
-    // Count total connections
     int totalConnections = 0;
     for (size_t i = 0; i < adjacencyList_.size(); ++i) {
         totalConnections += static_cast<int>(adjacencyList_[i].size());
@@ -389,7 +373,6 @@ void CampusGraph::connectivityReport() const {
     std::cout << "Total buildings: " << buildings_.size() << "\n";
     std::cout << "Total connections: " << totalConnections << "\n";
 
-    // Find buildings with highest degree
     int maxDegree = -1;
     for (size_t i = 0; i < adjacencyList_.size(); ++i) {
         if (static_cast<int>(adjacencyList_[i].size()) > maxDegree) {
@@ -407,7 +390,6 @@ void CampusGraph::connectivityReport() const {
     }
     std::cout << "\n";
 
-    // Find isolated buildings
     std::vector<std::string> isolated;
     for (size_t i = 0; i < buildings_.size(); ++i) {
         if (adjacencyList_[i].empty()) {
@@ -425,7 +407,6 @@ void CampusGraph::connectivityReport() const {
         std::cout << "\n";
     }
 
-    // Find connected components
     std::vector<bool> visited(buildings_.size(), false);
     int componentCount = 0;
     for (size_t i = 0; i < buildings_.size(); ++i) {
