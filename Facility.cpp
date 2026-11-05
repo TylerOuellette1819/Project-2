@@ -287,7 +287,6 @@ void FacilityDatabase::categoryReport() const {
         return;
     }
 
-    // Group by category (case-insensitive), keep first spelling
     struct CategoryStats {
         std::string displayName;
         int count;
@@ -295,7 +294,6 @@ void FacilityDatabase::categoryReport() const {
     std::vector<CategoryStats> categories;
     
     for (const auto& facility : facilities_) {
-        // Find if category already exists (case-insensitive)
         bool found = false;
         for (auto& cat : categories) {
             if (equalsIgnoreCase(cat.displayName, facility.category)) {
@@ -312,7 +310,6 @@ void FacilityDatabase::categoryReport() const {
         }
     }
 
-    // Display report
     std::cout << std::fixed << std::setprecision(1);
     int total = static_cast<int>(facilities_.size());
     for (const auto& cat : categories) {
